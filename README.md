@@ -1,4 +1,5 @@
-Intelligent Online Examination Proctoring System
+*Intelligent Online Examination Proctoring System*
+
 📌 Overview
 
 Ensuring the security of online examinations is essential in modern e-learning.
@@ -51,6 +52,11 @@ Machine Learning: Dlib (ResNet, HOG, SVM)
 Frontend: HTML, CSS, JavaScript
 
 Database: MySQL
+
+Libraries: OpenCV, NumPy, Dlib
+
+Security Features: EAR-based blink detection, multi-face verification, activity tracking
+
 🎯 How It Works
 
 User Registration
@@ -84,6 +90,3 @@ Blocks photo/video spoofing using EAR-based blink detection.
 Detects multiple people in camera view.
 
 Alerts for suspicious activities like window switching.
-Libraries: OpenCV, NumPy, Dlib
-
-Security Features: EAR-based blink detection, multi-face verification, activity tracking
