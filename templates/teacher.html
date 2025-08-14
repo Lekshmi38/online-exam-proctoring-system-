@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Registration</title>
+    <style>
+        /* Global Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Headings */
+        h2 {
+            color: #007bff;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Form Styling */
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            text-align: left;
+            width: 350px;
+            border: 1px solid #ddd;
+            margin-top: 15px;
+        }
+
+        /* Labels */
+        label {
+            font-weight: 600;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        /* Input Fields */
+        input {
+            width: 90%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        input:focus {
+            border-color: #007bff;
+        }
+
+        /* Button Styling */
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 6px;
+            background: #007bff;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* Flash Messages */
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Link Styling */
+        p a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        p a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome, Teacher!</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Registration Form -->
+    <h3>Register as a Teacher</h3>
+    <form method="POST">
+        <label>Name:</label>
+        <input type="text" name="name" required>
+
+        <label>Email:</label>
+        <input type="email" name="email" required>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p>Already registered? <a href="{{ url_for('create_exam') }}">Create an Exam</a></p>
+</body>
+</html>

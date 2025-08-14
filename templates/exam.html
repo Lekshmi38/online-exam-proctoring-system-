@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Exam</title>
+
+    <script>
+        let questions = JSON.parse('{{ questions | tojson | safe }}');
+        let currentIndex = 0;
+        let answers = {};
+        let timeLeft = {{ duration }} * 60;
+        let examId = "{{ exam_id }}";
+        let studentId = "{{ student_id }}";
+        let violationCount = 0;
+        let alertShown = false; // 🚨 Prevents multiple alerts for the same violation
+
+        function updateTimer() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            document.getElementById("timer").innerText = `${minutes}m ${seconds}s`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitExam();
+            }
+            timeLeft--;
+        }
+
+        function loadQuestion() {
+            let questionContainer = document.getElementById("question-container");
+            let currentQuestion = questions[currentIndex];
+
+            if (!currentQuestion) {
+                console.error("No question data found!");
+                return;
+            }
+
+            questionContainer.innerHTML = `<p class="question"><strong>Q${currentIndex + 1}: ${currentQuestion.question_text}</strong></p>`;
+
+            if (currentQuestion.options) {
+                let optionsHTML = "";
+                Object.keys(currentQuestion.options).forEach(optionKey => {
+                    optionsHTML += `
+                        <label class="option-label">
+                            <input type="radio" name="question${currentIndex}" value="${optionKey}"
+                                onclick="saveAnswer(${currentQuestion.question_id}, '${optionKey}')">
+                            <strong>${optionKey}.</strong> ${currentQuestion.options[optionKey]}
+                        </label><br>`;
+                });
+
+                questionContainer.innerHTML += optionsHTML;
+            } else {
+                questionContainer.innerHTML += `<p>Answer: <input type="text" class="text-answer"
+                    onblur="saveAnswer(${currentQuestion.question_id}, this.value)"></p>`;
+            }
+
+            document.getElementById("next-btn").disabled = (currentIndex === questions.length - 1);
+        }
+
+        function saveAnswer(questionId, selectedLabel) {
+            answers[questionId] = selectedLabel;
+            console.log("Answer saved:", answers);
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            }
+        }
+
+        function submitExam() {
+            clearInterval(timerInterval); // Stop timer when submitting
+
+            fetch("/submit_exam", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    exam_id: examId,
+                    answers: answers
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                window.location.href = `/exam_results?student_id=${data.student_id}&exam_id=${data.exam_id}&score=${data.score}&total_questions=${data.total_questions}&percentage=${data.percentage}`;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        let timerInterval = setInterval(updateTimer, 1000);
+        window.onload = loadQuestion;
+
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                logViolation("Tab switched");
+            }
+        });
+
+        document.addEventListener("keydown", function(event) {
+            if ((event.ctrlKey && ["c", "x", "v", "p"].includes(event.key)) ||
+                (event.altKey && event.key === "Tab") ||
+                (["Escape", "F12"].includes(event.key)) ||
+                (event.ctrlKey && event.shiftKey && event.key === "I")) {
+
+                logViolation("Suspicious keyboard shortcut detected");
+                event.preventDefault();
+            }
+        });
+
+        function logViolation(reason) {
+            if (!alertShown) { // Prevents multiple alerts at the same time
+                alert(`[WARNING] ${reason} detected!`);
+                alertShown = true;
+                setTimeout(() => alertShown = false, 2000); // Allows alert reset after 2 seconds
+            }
+
+            violationCount++;
+
+            if (violationCount >= 3) {
+                alert("You have been disqualified due to multiple violations. Your exam will be submitted.");
+
+                fetch("/report_violation", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        exam_id: examId,
+                        violation_reason: "Disqualified: " + reason
+                    })
+                })
+                .then(() => submitExam())
+                .catch(error => console.error("Error reporting violation:", error));
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 60%;
+            background: white;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        .question-container {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 10px;
+        }
+        .option-label {
+            display: block;
+            font-size: 16px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        .text-answer {
+            width: 80%;
+            padding: 8px;
+            font-size: 16px;
+        }
+        #timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: red;
+        }
+        .btn {
+            padding: 12px 20px;
+            margin: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Online Exam</h2>
+        <p><strong>Exam ID:</strong> {{ exam_id }}</p>
+        <p><strong>Student ID:</strong> {{ student_id }}</p>
+        <p><strong>Time Remaining:</strong> <span id="timer"></span></p>
+        <p><strong>Duration:</strong> {{ duration }} minutes</p>
+
+        <div id="question-container" class="question-container"></div>
+
+        <button id="next-btn" class="btn" onclick="nextQuestion()">Next</button>
+        <button class="btn" onclick="submitExam()">Submit Exam</button>
+    </div>
+
+</body>
+</html>

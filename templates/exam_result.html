@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Results</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Container */
+        .container {
+            background: #fff;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+
+        h1 {
+            color: #007bff;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Back Button */
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background 0.3s ease-in-out;
+        }
+
+        a:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% else %}
+            <h1>Exam Results</h1>
+            <p><strong>Student ID:</strong> {{ student_id }}</p>
+            <p><strong>Exam ID:</strong> {{ exam_id }}</p>
+            <p><strong>Score:</strong> {{ score }} / {{ total_questions }}</p>
+            <p><strong>Percentage:</strong> {{ percentage }}%</p>
+            <a href="/">Go Back</a>
+        {% endif %}
+    </div>
+</body>
+</html>

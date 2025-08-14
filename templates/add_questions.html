@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Exam Questions</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Fetch exams from the database when the page loads
+            $.get('/get-exams', function(data) {
+                let examDropdown = $('#exam_id');
+                examDropdown.empty();
+                examDropdown.append('<option value="">Select Exam</option>');
+
+                // Populate dropdown with exams
+                $.each(data, function(index, exam) {
+                    examDropdown.append(`<option value="${exam.exam_id}">${exam.exam_name}</option>`);
+                });
+            }).fail(function() {
+                console.error("Failed to fetch exam list.");
+            });
+
+            // Handle question submission
+            $('#question-form').on('submit', function(event) {
+                event.preventDefault();
+                const formData = $(this).serialize();
+
+                $.post('/add-question', formData, function(response) {
+                    $('#message').text(response);
+                    $('#question-form')[0].reset(); // Clear form
+                }).fail(function() {
+                    $('#message').text("An error occurred while adding the question.");
+                });
+            });
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #1565c0;
+        }
+        form {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 255, 0.2);
+            max-width: 400px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 90%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #64b5f6;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #1976d2;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #1565c0;
+        }
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+    </style>
+
+</head>
+<body>
+    <h2>Add Questions to an Exam</h2>
+
+    <form action="{{ url_for('add_questions', exam_id=exam_id) }}" method="POST">
+    <input type="hidden" name="exam_id" value="{{ exam_id }}">
+
+    <label>Question:</label>
+    <input type="text" name="question_text" required>
+
+    <label>Option A:</label>
+    <input type="text" name="option_A" required>
+
+    <label>Option B:</label>
+    <input type="text" name="option_B" required>
+
+    <label>Option C:</label>
+    <input type="text" name="option_C" required>
+
+    <label>Option D:</label>
+    <input type="text" name="option_D" required>
+
+    <label>Correct Option:</label>
+    <select name="correct_option" required>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+    </select>
+
+    <button type="submit">Add Question</button>
+</form>
+
+
+    <div id="message"></div>
+</body>
+</html>

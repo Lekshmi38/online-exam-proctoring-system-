@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Face Registration and Verification</h2>
+
+    <!-- Registration Form -->
+    <h3>Register</h3>
+    <form id="register-form">
+        <label for="name">Enter Name:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Register Face</button>
+    </form>
+    <p id="register-result"></p>
+
+    <!-- Verification Form -->
+    <h3>Verify</h3>
+    <form id="verify-form">
+        <label for="verify-name">Enter Name:</label>
+        <input type="text" id="verify-name" name="name" required>
+        <button type="submit">Verify Face</button>
+    </form>
+    <p id="verify-result"></p>
+
+    <script>
+        $(document).ready(function() {
+            // Handle registration
+            $('#register-form').submit(function(event) {
+                event.preventDefault();
+                let name = $('#name').val();
+
+                $.post('/register', { name: name }, function(response) {
+                    $('#register-result').text(response);
+                }).fail(function() {
+                    $('#register-result').text("❌ Registration failed!");
+                });
+            });
+
+            // Handle verification
+            $('#verify-form').submit(function(event) {
+                event.preventDefault();
+                let name = $('#verify-name').val();
+
+                $.post('/verify', { name: name }, function(response) {
+                    $('#verify-result').text(response);
+                }).fail(function() {
+                    $('#verify-result').text("❌ Verification failed!");
+                });
+            });
+        });
+    </script>
+</body>
+</html>

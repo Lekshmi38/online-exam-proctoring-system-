@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Registration and Verification</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Global Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fff;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #007bff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Form Styling */
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            text-align: left;
+            width: 350px;
+            margin: 20px;
+            border: 1px solid #ddd;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            width: 80%;
+            padding: 12px;
+            margin-top: 15px;
+             border: none;
+            border-radius: 6px;
+            background: #007bff;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #registration-message, #verification-message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            // Fetch all exams for registration dropdown
+            $.get('/get-exams', function(response) {
+                let examDropdown = $('#exam');
+                examDropdown.empty();
+                examDropdown.append('<option value="">Select Exam</option>');
+
+                if (response.exams && response.exams.length > 0) {
+                    $.each(response.exams, function(index, exam) {
+                        examDropdown.append(`<option value="${exam.exam_id}">${exam.exam_name}</option>`);
+                    });
+                }
+            });
+
+            // Fetch registered exams when student enters their ID for verification
+            $('#verify-studentid').on('change', function() {
+                const studentId = $(this).val();
+                if (studentId) {
+                    $.get(`/get-exams/${studentId}`, function(response) {
+                        let examDropdown = $('#verify-exam');
+                        examDropdown.empty();
+                        examDropdown.append('<option value="">Select Exam</option>');
+
+                        if (response.exams && response.exams.length > 0) {
+                            $.each(response.exams, function(index, exam) {
+                                examDropdown.append(`<option value="${exam.exam_id}">${exam.exam_name}</option>`);
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Handle registration form submission
+            $('#registration-form').on('submit', function(event) {
+                event.preventDefault();
+                const formData = $(this).serialize();
+
+                $.post('/register', formData)
+                    .done(function(response) {
+                        $('#registration-message').html(`<span style="color: green;">✅ ${response}</span>`);
+                    })
+                    .fail(function(xhr) {
+                        $('#registration-message').html(`<span style="color: red;">❌ ${xhr.responseText}</span>`);
+                    });
+            });
+
+            // Handle verification form submission
+            $('#verification-form').on('submit', function(event) {
+                event.preventDefault();
+                const formData = $(this).serialize();
+
+                $.post('/verify', formData, function(response) {
+                    $('#verification-message').html(`<span style="color: green;">✅ ${response}</span>`);
+                }).fail(function() {
+                    $('#verification-message').html(`<span style="color: red;">❌ An error occurred during verification.</span>`);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Face Registration</h1>
+    <form action="/register" method="post" id="registration-form">
+        <label for="name">Enter your name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="studentid">Enter your Student ID:</label>
+        <input type="text" id="studentid" name="studentid" required>
+
+        <label for="email">Enter your Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="exam">Select Exam:</label>
+        <input type="text" id="exam" name="exam" required>
+
+        <button type="submit">Register</button>
+    </form>
+    <div id="registration-message"></div>
+
+    <h1>Face Verification</h1>
+    <form action="/verify" method="post" id="verification-form">
+        <label for="verify-name">Enter your name:</label>
+        <input type="text" id="verify-name" name="name" required>
+
+        <label for="verify-studentid">Enter your Student ID:</label>
+        <input type="text" id="verify-studentid" name="studentid" required>
+
+        <label for="verify-email">Enter your Email:</label>
+        <input type="email" id="verify-email" name="email" required>
+
+        <label for="verify-exam">Select Exam:</label>
+        <select id="verify-exam" name="exam" required></select>
+
+        <button type="submit">Verify</button>
+    </form>
+    <div id="verification-message"></div>
+</body>
+</html>
